@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNILIA Times - Student Magazine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1D4ED8',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#0F172A',
+                    },
+                    fontFamily: {
+                        heading: ['Playfair Display', 'serif'],
+                        body: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .magazine-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .featured-article {
+            grid-column: span 8;
+        }
+        .trending-sidebar {
+            grid-column: span 4;
+        }
+        .section-header {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .section-header:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #1D4ED8, #10B981);
+        }
+        .article-card {
+            transition: all 0.3s ease;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .article-card img {
+            transition: transform 0.5s ease;
+        }
+        .article-card:hover img {
+            transform: scale(1.05);
+        }
+        .category-tag {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        .overlay-gradient {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+        .editors-pick-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+        .trending-number {
+            flex: 0 0 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .trending-1 { background: #1D4ED8; color: white; }
+        .trending-2 { background: #10B981; color: white; }
+        .trending-3 { background: #F59E0B; color: white; }
+        .discussion-bubble {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #1D4ED8;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover:after {
+            width: 100%;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 8px;
+        }
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 20px;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background: #1D4ED8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .modal-content button:hover {
+            background: #2563EB;
+        }
+        .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .poll-container {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .poll-option {
+            margin-bottom: 10px;
+        }
+        @media (max-width: 1024px) {
+            .featured-article {
+                grid-column: span 12;
+            }
+            .trending-sidebar {
+                grid-column: span 12;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-body text-gray-700">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-primary text-white rounded-lg p-2">
+                        <i class="fas fa-book-open text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-dark font-heading">CAMPUS Chronicles</h1>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="nav-link font-medium text-gray-700 hover:text-primary">Home</a>
+                    <a href="#" class="nav-link font-medium text-gray-700 hover:text-primary">News</a>
+                    <a href="#" class="nav-link font-medium text-gray-700 hover:text-primary">Entertainment</a>
+                    <a href="#" class="nav-link font-medium text-gray-700 hover:text-primary">Education</a>
+                    <a href="#" class="nav-link font-medium text-gray-700 hover:text-primary">Gossip</a>
+                    <a href="#" class="nav-link font-medium text-gray-700 hover:text-primary">Incidents</a>
+                    <a href="#" id="login-btn" class="nav-link font-medium text-gray-700 hover:text-primary">Login/Signup</a>
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition">
+                        Submit Article
+                    </button>
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Login/Signup Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Login or Signup</h2>
+            <input type="text" placeholder="Username or Email">
+            <input type="password" placeholder="Password">
+            <button id="login-submit">Login</button>
+            <p class="mt-4 text-center text-sm">Don't have an account? <a href="#" class="text-primary">Signup</a></p>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="py-12 bg-gradient-to-r from-primary to-blue-700 text-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 font-heading">UNILIA Times: Your Campus Voice</h1>
+                <p class="text-xl mb-8 max-w-2xl mx-auto">
+                    The premier student magazine for University of Livingstonia, covering Mzuzu, Ekwendeni, and Rumphi Raws campuses.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button class="bg-white text-primary px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition">
+                        Read Latest Edition
+                    </button>
+                    <button class="bg-accent text-white px-6 py-3 rounded-md font-medium hover:bg-amber-600 transition">
+                        Submit Your Story
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Magazine Layout -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="magazine-grid">
+                <!-- Featured Article -->
+                <div class="featured-article">
+                    <div class="section-header">
+                        <h2 class="text-3xl font-bold text-dark font-heading">Breaking News</h2>
+                    </div>
+                    
+                    <div class="article-card bg-white rounded-xl overflow-hidden shadow-md">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Featured article" class="w-full h-96 object-cover">
+                            <div class="overlay-gradient"></div>
+                            <div class="category-tag">
+                                <span class="bg-primary text-white px-3 py-1 rounded-md text-sm font-medium">Breaking News</span>
+                            </div>
+                            <div class="editors-pick-badge">
+                                <span class="bg-accent text-white px-3 py-1 rounded-md text-sm font-medium">Editor's Pick</span>
+                            </div>
+                            <div class="absolute bottom-0 left-0 p-6 text-white">
+                                <h3 class="text-2xl font-bold mb-2">UNILIA Mzuzu Campus Launches New Library Wing</h3>
+                                <p class="mb-4">State-of-the-art facility opens with 24/7 study spaces and digital resources</p>
+                                <div class="flex items-center text-sm">
+                                    <span>By Chisomo Banda</span>
+                                    <span class="mx-2">•</span>
+                                    <span>June 10, 2025</span>
+                                    <span class="mx-2">•</span>
+                                    <span>6 min read</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trending Sidebar -->
+                <div class="trending-sidebar">
+                    <div class="section-header">
+                        <h2 class="text-3xl font-bold text-dark font-heading">Trending Now</h2>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4 group">
+                            <div class="trending-number trending-1">1</div>
+                            <div>
+                                <h3 class="font-bold text-lg group-hover:text-primary transition">
+                                    <a href="#">Ekwendeni Campus Talent Show Steals the Spotlight</a>
+                                </h3>
+                                <div class="flex items-center text-sm text-gray-500 mt-2">
+                                    <span>Entertainment</span>
+                                    <span class="mx-2">•</span>
+                                    <span>2.5K views</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 group">
+                            <div class="trending-number trending-2">2</div>
+                            <div>
+                                <h3 class="font-bold text-lg group-hover:text-primary transition">
+                                    <a href="#">Rumphi Raws Campus Faces Water Shortage</a>
+                                </h3>
+                                <div class="flex items-center text-sm text-gray-500 mt-2">
+                                    <span>Incidents</span>
+                                    <span class="mx-2">•</span>
+                                    <span>1.8K views</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 group">
+                            <div class="trending-number trending-3">3</div>
+                            <div>
+                                <h3 class="font-bold text-lg group-hover:text-primary transition">
+                                    <a href="#">Mzuzu Campus Gossip: Who’s Dating Who?</a>
+                                </h3>
+                                <div class="flex items-center text-sm text-gray-500 mt-2">
+                                    <span>Gossip</span>
+                                    <span class="mx-2">•</span>
+                                    <span>1.5K views</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 group">
+                            <div class="trending-number bg-gray-200">4</div>
+                            <div>
+                                <h3 class="font-bold text-lg group-hover:text-primary transition">
+                                    <a href="#">New AI Course Introduced at Ekwendeni</a>
+                                </h3>
+                                <div class="flex items-center text-sm text-gray-500 mt-2">
+                                    <span>Education</span>
+                                    <span class="mx-2">•</span>
+                                    <span>1.2K views</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 group">
+                            <div class="trending-number bg-gray-200">5</div>
+                            <div>
+                                <h3 class="font-bold text-lg group-hover:text-primary transition">
+                                    <a href="#">UNILIA Sports Day Unites All Campuses</a>
+                                </h3>
+                                <div class="flex items-center text-sm text-gray-500 mt-2">
+                                    <span>Sports</span>
+                                    <span class="mx-2">•</span>
+                                    <span>950 views</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Latest Articles Section -->
+                <div class="col-span-12 mt-16">
+                    <div class="section-header">
+                        <h2 class="text-3xl font-bold text-dark font-heading">Latest Articles</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="article-card bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="relative">
+                                <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Article image" class="w-full h-48 object-cover">
+                                <div class="category-tag">
+                                    <span class="bg-secondary text-white px-3 py-1 rounded-md text-sm font-medium">Entertainment</span>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-3">Rumphi Raws Campus Hosts Annual Music Festival</h3>
+                                <p class="text-gray-600 mb-4">Local artists and student bands light up the stage at UNILIA’s biggest event</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <span>Tiwonge Phiri</span>
+                                        <span class="mx-2">•</span>
+                                        <span>June 9, 2025</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-500"><i class="far fa-comment mr-1"></i> 32</span>
+                                        <span class="text-gray-500"><i class="far fa-eye mr-1"></i> 2.3K</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="article-card bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="relative">
+                                <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Article image" class="w-full h-48 object-cover">
+                                <div class="category-tag">
+                                    <span class="bg-accent text-white px-3 py-1 rounded-md text-sm font-medium">Education</span>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-3">Mzuzu Campus Introduces Free Coding Bootcamp</h3>
+                                <p class="text-gray-600 mb-4">A new initiative to equip students with tech skills for the digital age</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <span>Yamikani Manda</span>
+                                        <span class="mx-2">•</span>
+                                        <span>June 8, 2025</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-500"><i class="far fa-comment mr-1"></i> 28</span>
+                                        <span class="text-gray-500"><i class="far fa-eye mr-1"></i> 1.9K</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="article-card bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="relative">
+                                <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Article image" class="w-full h-48 object-cover">
+                                <div class="category-tag">
+                                    <span class="bg-purple-600 text-white px-3 py-1 rounded-md text-sm font-medium">Gossip</span>
+                                </div>
+                                <div class="discussion-bubble">
+                                    <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
+                                        <i class="fas fa-comments mr-1"></i> 72
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-3">Ekwendeni’s Mystery Couple Sparks Campus Buzz</h3>
+                                <p class="text-gray-600 mb-4">Who’s behind the secret love notes found across campus?</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <span>Lusungu Nyirenda</span>
+                                        <span class="mx-2">•</span>
+                                        <span>June 7, 2025</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-500"><i class="far fa-star mr-1"></i> 4.9</span>
+                                        <span class="text-gray-500"><i class="far fa-eye mr-1"></i> 4.1K</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Editors Picks Section -->
+                <div class="col-span-12 mt-16">
+                    <div class="section-header">
+                        <h2 class="text-3xl font-bold text-dark font-heading">Editor's Picks</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="article-card bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="relative">
+                                <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Article image" class="w-full h-64 object-cover">
+                                <div class="category-tag">
+                                    <span class="bg-secondary text-white px-3 py-1 rounded-md text-sm font-medium">Incidents</span>
+                                </div>
+                                <div class="editors-pick-badge">
+                                    <span class="bg-accent text-white px-3 py-1 rounded-md text-sm font-medium">Editor's Pick</span>
+                                </div>
+                                <div class="overlay-gradient"></div>
+                                <div class="absolute bottom-0 left-0 p-6 text-white">
+                                    <h3 class="text-2xl font-bold mb-2">Power Outage Disrupts Exams at Rumphi Raws</h3>
+                                    <p class="mb-4">Administration promises swift action to reschedule affected tests</p>
+                                    <div class="flex items-center text-sm">
+                                        <span>By Kondwani Mwale</span>
+                                        <span class="mx-2">•</span>
+                                        <span>June 6, 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="article-card bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="relative">
+                                <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Article image" class="w-full h-64 object-cover">
+                                <div class="category-tag">
+                                    <span class="bg-primary text-white px-3 py-1 rounded-md text-sm font-medium">Education</span>
+                                </div>
+                                <div class="editors-pick-badge">
+                                    <span class="bg-accent text-white px-3 py-1 rounded-md text-sm font-medium">Editor's Pick</span>
+                                </div>
+                                <div class="overlay-gradient"></div>
+                                <div class="absolute bottom-0 left-0 p-6 text-white">
+                                    <h3 class="text-2xl font-bold mb-2">UNILIA Partners with Tech Firm for Student Internships</h3>
+                                    <p class="mb-4">New program offers hands-on experience for Mzuzu students</p>
+                                    <div class="flex items-center text-sm">
+                                        <span>By Dr. Esther Lungu</span>
+                                        <span class="mx-2">•</span>
+                                        <span>June 5, 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Most Discussed Section -->
+                <div class="col-span-12 mt-16">
+                    <div class="section-header">
+                        <h2 class="text-3xl font-bold text-dark font-heading">Most Discussed</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mr-4"></div>
+                                <div>
+                                    <h4 class="font-bold">Blessings Kamanga</h4>
+                                    <p class="text-sm text-gray-500">Student, Mzuzu Campus</p>
+                                </div>
+                            </div>
+                            <p class="font-semibold mb-4">"The new library fees are too high for most students!"</p>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-500"><i class="far fa-comment mr-1"></i> 145 comments</span>
+                                <span class="text-gray-500">3 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mr-4"></div>
+                                <div>
+                                    <h4 class="font-bold">Tadala Simwaka</h4>
+                                    <p class="text-sm text-gray-500">Student, Ekwendeni Campus</p>
+                                </div>
+                            </div>
+                            <p class="font-semibold mb-4">"The talent show was epic, but we need more events like this!"</p>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-500"><i class="far fa-comment mr-1"></i> 112 comments</span>
+                                <span class="text-gray-500">1 day ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mr-4"></div>
+                                <div>
+                                    <h4 class="font-bold">Pemphero Mbewe</h4>
+                                    <p class="text-sm text-gray-500">Student, Rumphi Raws</p>
+                                </div>
+                            </div>
+                            <p class="font-semibold mb-4">"The water shortage needs urgent attention from admin!"</p>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-500"><i class="far fa-comment mr-1"></i> 89 comments</span>
+                                <span class="text-gray-500">1 day ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mr-4"></div>
+                                <div>
+                                    <h4 class="font-bold">Dr. Samuel Nkhoma</h4>
+                                    <p class="text-sm text-gray-500">Lecturer, Mzuzu Campus</p>
+                                </div>
+                            </div>
+                            <p class="font-semibold mb-4">"The new internship program will boost student employability."</p>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-500"><i class="far fa-comment mr-1"></i> 76 comments</span>
+                                <span class="text-gray-500">2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cool Segment: Campus Poll -->
+                <div class="col-span-12 mt-16">
+                    <div class="section-header">
+                        <h2 class="text-3xl font-bold text-dark font-heading">Campus Pulse: Weekly Poll</h2>
+                    </div>
+                    <div class="poll-container">
+                        <h3 class="text-xl font-bold mb-4">What’s the best campus event of 2025 so far?</h3>
+                        <div class="poll-option">
+                            <input type="radio" name="poll" id="poll1" class="mr-2">
+                            <label for="poll1">Mzuzu Campus Library Opening</label>
+                        </div>
+                        <div class="poll-option">
+                            <input type="radio" name="poll" id="poll2" class="mr-2">
+                            <label for="poll2">Ekwendeni Talent Show</label>
+                        </div>
+                        <div class="poll-option">
+                            <input type="radio" name="poll" id="poll3" class="mr-2">
+                            <label for="poll3">Rumphi Raws Music Festival</label>
+                        </div>
+                        <button class="bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition mt-4">
+                            Vote Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cool Segment: Campus Spotlight -->
+                <div class="col-span-12 mt-16">
+                    <div class="section-header">
+                        <h2 class="text-3xl font-bold text-dark font-heading">Campus Spotlight</h2>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <h3 class="text-xl font-bold mb-4">Student of the Month: Mercy Chimaliro</h3>
+                        <p class="text-gray-600 mb-4">Mercy, a third-year student at Ekwendeni, leads the campus sustainability club, reducing waste by 30%.</p>
+                        <button class="bg-accent text-white px-4 py-2 rounded-md font-medium hover:bg-amber-600 transition">
+                            Read Her Story
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Newsletter Section -->
+                <div class="col-span-12 mt-16">
+                    <div class="bg-gradient-to-r from-primary to-blue-700 rounded-2xl p-8 text-white">
+                        <div class="max-w-3xl mx-auto text-center">
+                            <h2 class="text-3xl font-bold mb-4 font-heading">Stay Updated with UNILIA News</h2>
+                            <p class="mb-6 text-blue-100 max-w-2xl mx-auto">
+                                Subscribe to our newsletter for the latest updates from Mzuzu, Ekwendeni, and Rumphi Raws campuses.
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                <input type="email" placeholder="Your email address" class="px-4 py-3 rounded-md text-gray-700 w-full sm:w-96">
+                                <button class="bg-accent text-white px-6 py-3 rounded-md font-medium hover:bg-amber-600 transition whitespace-nowrap">
+                                    Subscribe Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 font-heading">UNILIA Times</h3>
+                    <p class="text-gray-400 mb-6">
+                        The voice of University of Livingstonia students, covering Mzuzu, Ekwendeni, and Rumphi Raws campuses.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-linkedin-in text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Submit Article</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Editorial Guidelines</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Categories</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Breaking News</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Entertainment</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Education</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Gossip</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Incidents</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Sports</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+                    <address class="text-gray-400 not-italic">
+                        <p class="mb-2"><i class="fas fa-map-marker-alt mr-3"></i> Mzuzu Campus, Student Union Office</p>
+                        <p class="mb-2"><i class="fas fa-envelope mr-3"></i> contact@uniliatimes.mw</p>
+                        <p class="mb-2"><i class="fas fa-phone mr-3"></i> +265 999 123 456</p>
+                        <p><i class="fas fa-clock mr-3"></i> Mon-Fri: 8AM - 4PM</p>
+                    </address>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+                <p>© 2025 UNILIA Times. All rights reserved.</p>
+                <p class="mt-2">By the students, for the students of University of Livingstonia.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            alert('Mobile menu would open here. This is a demonstration layout.');
+        });
+
+        // Login/Signup modal
+        const modal = document.getElementById('login-modal');
+        const loginBtn = document.getElementById('login-btn');
+        const closeBtn = document.querySelector('.close');
+        const loginSubmit = document.getElementById('login-submit');
+
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+        });
+
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        loginSubmit.addEventListener('click', function() {
+            alert('Login functionality would be implemented here.');
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Article card interactions
+        document.querySelectorAll('.article-card').forEach(card => {
+            card.addEventListener('click', function() {
+                alert('Article page would open here. This is a demonstration layout.');
+            });
+        });
+
+        // Poll interaction
+        document.querySelector('.poll-container button').addEventListener('click', function() {
+            const selected = document.querySelector('input[name="poll"]:checked');
+            if (selected) {
+                alert(`You voted for ${selected.nextElementSibling.textContent}!`);
+            } else {
+                alert('Please select an option before voting.');
+            }
+        });
+    </script>
